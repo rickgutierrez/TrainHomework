@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Train Schedule</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	
+	<script src="jquery-3.2.0.min.js"></script> 
+
+	<link rel="javascript" src="moment.js">
+</head>
+<body>
+<script src="https://www.gstatic.com/firebasejs/3.8.0/firebase.js"></script>
+<div class="container">
+	<div class="jumbotron" style = "background-color: #5881c4; color: ##566070; padding:0;"> <h1><center>Train Schedule</h1> <br><h4><center>Most Accurate Train Schedule</h4></center></center> </div>
+</div>
+<div class="container">
+  <h2>Current Train Schedule</h2>
+  <!--Table-->            
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Train Name</th>
+        <th>Destination</th>
+        <th>Frequency(min)</th>
+        <th>Next Arrival</th>
+        <th>Minutes Away</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Polar Express</td>
+        <td>Alaska</td>
+        <td>120</td>
+        <td>16:30</td>
+        <td>45</td>
+      </tr>
+      <tr>
+        <td>Midnight Cowboy</td>
+        <td>Texas</td>
+        <td>45</td>
+        <td>13:00</td>
+        <td>15</td>
+      </tr>
+      <tr>
+        <td>California Rail</td>
+        <td>San Francisco</td>
+        <td>60</td>
+        <td>22:30</td>
+        <td>55</td>
+      </tr>
+      <tr>
+        <td>Kabooze Rail</td>
+        <td>Ohio</td>
+        <td>120</td>
+        <td>23:30</td>
+        <td>10</td>
+      </tr>
+      <tr>
+        <td>Thomas Rail</td>
+        <td>Virginia</td>
+        <td>120</td>
+        <td>17:50</td>
+        <td>5</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<form>
+	<!--Form-->
+  <div class="form-group">
+    <label for="train">Train Name</label>
+    <input type="train" class="form-control" id="train">
+  </div>
+  <div class="form-group">
+    <label for="dest">Destination</label>
+    <input type="dest" class="form-control" id="dest">
+  </div>
+   <div class="form-group">
+    <label for="first">First Train Time(HH:mm-military time)</label>
+    <input type="first" class="form-control" id="first">
+  </div>
+   <div class="form-group">
+    <label for="freq">Frequency(min)</label>
+    <input type="freq" class="form-control" id="freq">
+  </div>
+  
+  <button type="submit" class="btn btn-default" id = "btn"> Submit</button>
+
+</form>
+<script type="text/javascript">
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyCu0YykOA2AM9PN36OyPNYIRfeDypYI8n8",
+    authDomain: "train-schedule-e25d2.firebaseapp.com",
+    databaseURL: "https://train-schedule-e25d2.firebaseio.com",
+    projectId: "train-schedule-e25d2",
+    storageBucket: "train-schedule-e25d2.appspot.com",
+    messagingSenderId: "803262700127"
+};
+firebase.initializeApp(config);
+
+var database = firebase.database();
+
+    
+
+    var freqInput = $("#frequ-input").val().trim();
+
+    var inputTconverted = moment(inputT, "hh:mm").subtract(1, "years");
+
+    var difference = moment().diff(moment(inputTconverted), "minutes");
+
+    var remainder = difference % freqInput;
+
+    var inputT = $("#train-time").val().trim();
+
+    var freqInput = $("#frequ-input").val().trim();
+    
+    var nextT = moment().add(minsTill, "minutes");
+    
+    var minsTill = freqInput - remainder;
+/*var time = moment().format('LT');
+var minsAway = moment(frequency).startOf('hour').fromNow(time);
+var nextArr = frequency * minsAway;*/
+
+
+$("#submit").on("click", function(event) {
+    event.preventDefault();
+
+    trainName = $("#name-input").val().trim();
+    destination = $("#dest-input").val().trim();
+    freqInput = $("#frequ-input").val().trim();
+    inputTconverted = moment(inputT, "hh:mm").subtract(1, "years");
+    nextT = moment().add(minsTill, "minutes");
+    minsTill = freqInput - remainder;
+
+    database.ref().push({
+        trainName: trainName,
+        destination: destination,
+        freqInput: freqInput,
+        inputTconverted: inputTconverted,
+        nextT: nextT,
+        minsTill: minsTill
+    });
+
+});
+
+database.ref().on("child_added", function(childsnapshot) {
+    //console.log(childsnapshot.val().trainName);
+    //console.log(childsnapshot.val().destination);
+    //console.log(childsnapshot.val().frequency);
+    
+    $("#new-input").append("<tr><td>" + 
+      childsnapshot.val().trainName + "</td><td>" +
+      childsnapshot.val().destination + "</td><td> " + 
+      childsnapshot.val().freqInput + "</td><td>"+ 
+      childsnapshot.val().inputTconverted + "</td><td>" + 
+      childsnapshot.val().nextT +"</td><td>"+ 
+        childsnapshot.val().minsTill + "</td></tr>");
+
+  }, function(errorObject) {
+      console.log("Errors handled: " + errorObject.code);
+});
+
+
+</script>
+	
+</body>
+</html>
